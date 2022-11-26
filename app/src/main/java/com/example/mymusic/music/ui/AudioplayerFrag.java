@@ -37,7 +37,7 @@ public class AudioplayerFrag extends Fragment {
     private ArrayList<AudioEntity> list;
     AudioEntity audioEntity;
     private int position;
-    MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
+    MediaPlayer mediaPlayer = new MediaPlayer();
     int x;
 
     @Override

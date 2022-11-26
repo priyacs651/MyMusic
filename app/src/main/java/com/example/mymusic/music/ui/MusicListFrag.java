@@ -1,8 +1,13 @@
 package com.example.mymusic.music.ui;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,11 +49,6 @@ public class MusicListFrag extends Fragment implements AudioAdapter.OnItemClickL
         super.onViewCreated(view, savedInstanceState);
         initAdapter();
         viewModel = new ViewModelProvider(requireActivity()).get(MusicViewModel.class);
-        if(checkPermission()){
-            requestPermission();
-        } else {
-            getAudioList();
-        }
     }
 
     private void initAdapter() {
@@ -63,8 +63,29 @@ public class MusicListFrag extends Fragment implements AudioAdapter.OnItemClickL
 
     void requestPermission(){
         if(ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.READ_EXTERNAL_STORAGE)){
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("alert").setMessage("READ PERMISSION IS REQUIRED,PLEASE ALLOW FROM SETTINGS");
+            builder.setCancelable(false);
+            builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package",getActivity().getPackageName(), null);
+                    intent.setData(uri);
+                    requireActivity().startActivity(intent);
+                }
+            });
 
-            Toast.makeText(requireContext(),"READ PERMISSION IS REQUIRED,PLEASE ALLOW FROM SETTINGS",Toast.LENGTH_SHORT).show();
+            builder.setNegativeButton("Deny", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                     getActivity().finish();
+                }
+            });
+            builder.create().show();
+
+/*            Toast.makeText(requireContext(),"READ PERMISSION IS REQUIRED,PLEASE ALLOW FROM SETTINGS",Toast.LENGTH_SHORT).show();*/
         }else
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},REQUEST_PERMISSIONS_CODE_WRITE_STORAGE);
     }
@@ -82,6 +103,17 @@ public class MusicListFrag extends Fragment implements AudioAdapter.OnItemClickL
             }
         }
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if(checkPermission()){
+            requestPermission();
+        } else {
+            getAudioList();
+        }
+    }
+
 
     private void getAudioList() {
         audioAdapter.setAudioEntityList(viewModel.getAudioList());
